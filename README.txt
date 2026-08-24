@@ -1,4 +1,4 @@
-Novel Translator PWA v0.1
+Novel Translator PWA v0.1.1
 
 What this version does
 - Runs as an installable web app on iPad/iPhone/desktop browsers.
@@ -15,10 +15,14 @@ Important limitation
 - The chapter must be copied/pasted into this app.
 - The app must be served over HTTPS to be installable as a PWA and to use its service worker.
 
-Quick deployment
-1. Upload all files in this folder to any HTTPS static host (for example GitHub Pages).
-2. Open the deployed URL in Safari on iPad.
-3. Share -> Add to Home Screen.
-4. Open Novel Translator from the Home Screen.
-5. Advanced -> enter Gemini API Key.
-6. Copy novel chapter text from the website and paste into Novel Translator.
+GitHub Pages
+- Publish branch: main
+- Folder: /(root)
+- Expected URL: https://arazet9.github.io/novel-translator-pwa/
+
+On iPad
+1. Open the GitHub Pages URL in Safari.
+2. Share -> Add to Home Screen.
+3. Open Novel Translator from the Home Screen.
+4. Advanced -> enter Gemini API Key.
+5. Copy novel chapter text from the website and paste into Novel Translator.
