@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1f6f43">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Novel Translator">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Novel Translator</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg:#f6f7f8; --card:#fff; --text:#1f2328; --muted:#6b7280;
+      --border:#e5e7eb; --green:#1f6f43; --green2:#185b37; --blue:#3f4f79;
+    }
+    html,body { margin:0; min-height:100%; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    body { padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right))
+      max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+    .app { max-width:900px; margin:0 auto; }
+    .header { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    h1 { font-size:20px; margin:0; }
+    .sub { color:var(--muted); font-size:12px; margin-top:3px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; margin-top:10px; }
+    label { display:block; font-size:12px; font-weight:650; margin-bottom:6px; }
+    textarea,input,select { width:100%; border:1px solid #cfd4da; border-radius:10px; padding:10px 11px;
+      background:#fff; color:var(--text); font:inherit; font-size:14px; outline:none; }
+    textarea:focus,input:focus,select:focus { border-color:#8b949e; }
+    #sourceText { min-height:250px; resize:vertical; line-height:1.55; }
+    #resultText { min-height:300px; white-space:pre-wrap; line-height:1.75; font-size:17px; }
+    #instruction { min-height:60px; resize:vertical; }
+    #feedback { min-height:70px; resize:vertical; }
+    #sourceOfTruth { min-height:150px; resize:vertical; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; }
+    #styleMemory { min-height:100px; resize:vertical; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    button { width:100%; border:0; border-radius:10px; padding:12px 10px; font-size:14px; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:default; }
+    .primary { background:var(--green); color:white; }
+    .primary:active { background:var(--green2); }
+    .secondary { background:#eef0f2; color:#31363b; border:1px solid #dfe3e7; }
+    .blue { background:var(--blue); color:white; }
+    .danger { background:#fff0f0; color:#9f2424; border:1px solid #f2cccc; }
+    .viewbtn.active { background:#222; color:#fff; }
+    .hint,.status { color:var(--muted); font-size:12px; line-height:1.45; }
+    .status { margin-top:8px; min-height:18px; }
+    .progress { height:5px; border-radius:5px; overflow:hidden; background:#eceff1; margin-top:9px; display:none; }
+    .bar { height:100%; width:0; background:var(--green); transition:width .2s; }
+    .toolbar { display:flex; gap:8px; align-items:center; }
+    .toolbar button { width:auto; padding:9px 12px; }
+    details summary { cursor:pointer; font-weight:650; font-size:13px; color:#4b5563; }
+    .reader { padding:16px; }
+    .hidden { display:none !important; }
+    .pill { font-size:11px; padding:5px 8px; background:#eef6f1; color:var(--green); border-radius:999px; white-space:nowrap; }
+    @media (max-width:620px) {
+      .row,.row3 { grid-template-columns:1fr; }
+      #sourceText { min-height:220px; }
+      #resultText { min-height:340px; }
+      .reader { padding:13px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>Novel Translator</h1>
+      <div class="sub">iPad Web App · PWA v0.1</div>
+    </div>
+    <span id="onlinePill" class="pill">Online</span>
+  </div>
+
+  <div class="card">
+    <label for="sourceText">ต้นฉบับนิยาย</label>
+    <textarea id="sourceText" placeholder="คัดลอกตอนนิยายจากเว็บ แล้ววางตรงนี้..."></textarea>
+    <div class="row3" style="margin-top:8px">
+      <button id="pasteBtn" class="secondary">Paste</button>
+      <button id="clearBtn" class="secondary">Clear</button>
+      <button id="translateBtn" class="primary">Translate</button>
+    </div>
+    <div id="progress" class="progress"><div id="bar" class="bar"></div></div>
+    <div id="status" class="status">Ready</div>
+  </div>
+
+  <div id="readerCard" class="card hidden">
+    <div class="row" style="margin-bottom:10px">
+      <button id="originalBtn" class="secondary viewbtn">Original</button>
+      <button id="thaiBtn" class="secondary viewbtn active">Thai</button>
+    </div>
+    <div id="originalView" class="reader hidden"></div>
+    <div id="resultText" class="reader"></div>
+    <div class="row" style="margin-top:10px">
+      <button id="copyBtn" class="secondary">Copy Thai</button>
+      <button id="cancelBtn" class="danger">Cancel</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label for="feedback">Feedback / Remember</label>
+    <textarea id="feedback" placeholder="เช่น:
+ต่อไป Boss Bing ใช้ เถ้าแก่ปิง
+บทสนทนาอย่าเป็นทางการเกินไป"></textarea>
+    <button id="rememberBtn" class="blue" style="margin-top:8px">Remember</button>
+    <div id="feedbackStatus" class="status"></div>
+  </div>
+
+  <details class="card">
+    <summary>Advanced</summary>
+    <div style="margin-top:12px">
+      <label for="apiKey">Gemini API Key</label>
+      <input id="apiKey" type="password" placeholder="Gemini API key">
+
+      <label for="instruction" style="margin-top:12px">Instruction</label>
+      <textarea id="instruction" placeholder="คำสั่งชั่วคราวสำหรับตอนนี้"></textarea>
+
+      <label for="novelName" style="margin-top:12px">Novel Profile</label>
+      <input id="novelName" type="text" placeholder="เช่น Deep Sea Fishing">
+
+      <label for="sourceOfTruth" style="margin-top:12px">Source of Truth</label>
+      <textarea id="sourceOfTruth" spellcheck="false"></textarea>
+
+      <label for="styleMemory" style="margin-top:12px">Novel Style Memory</label>
+      <textarea id="styleMemory"></textarea>
+
+      <div class="row" style="margin-top:8px">
+        <button id="saveSettingsBtn" class="secondary">Save Settings</button>
+        <button id="clearCacheBtn" class="secondary">Clear Cache</button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        API key, glossary และ style memory เก็บไว้ในเครื่องนี้เท่านั้น
+      </div>
+    </div>
+  </details>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
